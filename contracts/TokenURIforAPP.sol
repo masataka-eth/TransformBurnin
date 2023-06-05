@@ -46,6 +46,7 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
         // default
         baseURI = "https://nft.aopanda.ainy-llc.com/site/app/metadata/";
         baseURI_lock = "https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/";
+        beforeRevealURI = "https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json";
     }
     // modifier
     modifier onlyAdmin() {

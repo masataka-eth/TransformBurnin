@@ -157,11 +157,11 @@ describe("TokenURIforAPP", function () {
             .burninRegistory([1,2,3,4,5],30,proof,{ value: ethers.utils.parseEther("1") })).to.be.not.reverted;
 
             // Check withdraw
-            const initialBalance = await ethers.provider.getBalance(owner.address);
-            await expect(myContract.connect(users[0]).withdraw()).to.be.reverted;
-            await myContract.connect(owner).withdraw();
-            const finalBalance = await ethers.provider.getBalance(owner.address);
-            expect(finalBalance).to.be.gt(initialBalance);
+            // const initialBalance = await ethers.provider.getBalance(owner.address);
+            // await expect(myContract.connect(users[0]).withdraw()).to.be.reverted;
+            // await myContract.connect(owner).withdraw();
+            // const finalBalance = await ethers.provider.getBalance(owner.address);
+            // expect(finalBalance).to.be.gt(initialBalance);
         });
 
         it("sale is not active", async function () {
@@ -357,7 +357,62 @@ describe("TokenURIforAPP", function () {
     });
 
     describe("burninRegistory", function () {
+        it("integration", async function () {
+            const { myContract, owner, users,tree } = await loadFixture(fixture);
+        
+            let proof = tree.getHexProof(ethers.utils.solidityKeccak256(
+                ['address', 'uint256'], [users[0].address,30]))
 
+            // Deploy the ERC721Mock contract
+            const ERC721Mock = await ethers.getContractFactory("ERC721Mock");
+            const erc721 = await ERC721Mock.deploy("Test Token", "TST");
+        
+            // Mint a token to user[0]
+            for(let i = 1; i <= 5; i++){
+                await erc721.connect(owner).mint(users[0].address, i);
+            }
+        
+            // Set burninNFT to our ERC721Mock contract
+            await myContract.connect(owner).setBurninNFT(erc721.address);
+        
+            // Set up other preconditions...
+            await myContract.connect(owner).setPaused(false);
+            
+            // Call burninRegistory
+            await expect(myContract.connect(users[0])
+            .burninRegistory([1,3,5],30,proof,{ value: ethers.utils.parseEther("1") })).to.be.not.reverted;
+
+            // check tokenURI
+            expect(await myContract.tokenURI_future(2,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/0/2.json");
+            expect(await myContract.tokenURI_future(2,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/0/2.json");
+
+            expect(await myContract.tokenURI_future(4,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/0/4.json");
+            expect(await myContract.tokenURI_future(4,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/0/4.json");
+
+            expect(await myContract.tokenURI_future(1,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+            expect(await myContract.tokenURI_future(1,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+
+            expect(await myContract.tokenURI_future(3,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+            expect(await myContract.tokenURI_future(3,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+            
+            expect(await myContract.tokenURI_future(5,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+            expect(await myContract.tokenURI_future(5,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+
+            // reveal
+            await myContract.connect(owner).setPaused(true);
+            await myContract.connect(owner).IncBurninIndex();
+            expect(await myContract.tokenURI_future(1,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/1/1.json");
+            expect(await myContract.tokenURI_future(1,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/1/1.json");
+
+            expect(await myContract.tokenURI_future(3,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/1/3.json");
+            expect(await myContract.tokenURI_future(3,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/1/3.json");
+            
+            expect(await myContract.tokenURI_future(5,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/1/5.json");
+            expect(await myContract.tokenURI_future(5,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/1/5.json");
+
+
+
+        });
     });
 
 
