@@ -25,10 +25,10 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
 
     address public constant WITHDRAW_ADDRESS = 0x62314D5A0F7CBed83Df49C53B9f2C687d2c18289;
     
-    mapping(uint256 => uint256) public _burninIndexTokenId;
+    mapping(uint256 => uint256) public burninIndexTokenId;
     mapping(address => WalletMng) public _walletMng;
 
-    uint128 public _currentBurninIndex = 1; // First time burnin is 1 and original is 0.
+    uint128 public currentBurninIndex = 1; // First time burnin is 1 and original is 0.
     bool public paused = true;
     uint256 public cost = 0.001 ether;
     bytes32 public merkleRoot;
@@ -46,7 +46,7 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
         // default
         baseURI = "https://nft.aopanda.ainy-llc.com/site/app/metadata/";
         baseURI_lock = "https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/";
-        beforeRevealURI = "https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json";
+        beforeRevealURI = "https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/";
     }
     // modifier
     modifier onlyAdmin() {
@@ -76,7 +76,7 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
         beforeRevealURI = newURI;
     }
     function IncBurninIndex() external onlyAdmin {
-        _currentBurninIndex += 1;
+        currentBurninIndex += 1;
     }
     function setPaused(bool _value) external onlyAdmin {
         paused = _value;
@@ -102,8 +102,8 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
         for (uint256 i = 0; i < _burnTokenIds.length; i++) {
             uint256 tokenId = _burnTokenIds[i];
             if(burninNFT.ownerOf(tokenId) != msg.sender) revert OnlyOperatedByTokenOwner(tokenId, msg.sender);
-            _burninIndexTokenId[tokenId] = _currentBurninIndex;
-            emit Registory(_currentBurninIndex,msg.sender,tokenId);
+            burninIndexTokenId[tokenId] = currentBurninIndex;
+            emit Registory(currentBurninIndex,msg.sender,tokenId);
         }
     }
 
@@ -130,7 +130,7 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
 
     function tokenURI_future(uint256 _tokkenId,uint256 _locked) external view
     returns(string memory URI){
-        if(_burninIndexTokenId[_tokkenId] < _currentBurninIndex){
+        if(burninIndexTokenId[_tokkenId] < currentBurninIndex){
             string memory _baseURI = baseURI;
             if(_locked == 1){
                 // locked
@@ -139,28 +139,45 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
             // Show Image
             URI = string.concat(
                 _baseURI,
-                _burninIndexTokenId[_tokkenId].toString(),
+                burninIndexTokenId[_tokkenId].toString(),
                 "/",
                 _tokkenId.toString(),
                 baseExtension
             );
         }else{
             // before rebeal
-            URI = beforeRevealURI;
+            string memory _metadata = "0.json";
+            if(_locked == 1){
+                // locked
+                _metadata = "1.json";
+            }
+            URI = string.concat(
+                beforeRevealURI,
+                _metadata
+            );
         }
+    }
+
+    // @dev Call carefully to avoid blockgaslimit
+    function isBurnin(uint256[] calldata _tokenIds) external view returns(bool[] memory){
+        bool[] memory _isBurnin = new bool[](_tokenIds.length);
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            _isBurnin[i] = (burninIndexTokenId[_tokenIds[i]] == currentBurninIndex);
+        }
+        return _isBurnin;
     }
 
     // internal
     function _resetCount(address _owner) internal{
-        if(_walletMng[_owner].burninIndex < _currentBurninIndex){
-            _walletMng[_owner].burninIndex = _currentBurninIndex;
+        if(_walletMng[_owner].burninIndex < currentBurninIndex){
+            _walletMng[_owner].burninIndex = currentBurninIndex;
              _walletMng[_owner].burninCount = 0;
         }
     }
 
     function _getRemain(address _address,uint256 _alAmountMax) internal  view returns  (uint256){
         uint256 _Amount = 0;
-        if(_walletMng[_address].burninIndex < _currentBurninIndex){
+        if(_walletMng[_address].burninIndex < currentBurninIndex){
             _Amount = _alAmountMax;
         }else{
             _Amount = _alAmountMax - _walletMng[_address].burninCount;

@@ -101,10 +101,10 @@ describe("TokenURIforAPP", function () {
     
       it("IncBurninIndex", async function () {
         const { myContract, owner, users } = await loadFixture(fixture);
-        const initialIndex = await myContract._currentBurninIndex();
+        const initialIndex = await myContract.currentBurninIndex();
         await expect(myContract.connect(users[0]).IncBurninIndex()).to.be.reverted;
         await myContract.connect(owner).IncBurninIndex();
-        const afterIndex = await myContract._currentBurninIndex();
+        const afterIndex = await myContract.currentBurninIndex();
         expect(afterIndex).to.equal(initialIndex.add(1));
       });
     
@@ -154,7 +154,10 @@ describe("TokenURIforAPP", function () {
             
             // Call burninRegistory
             await expect(myContract.connect(users[0])
-            .burninRegistory([1,2,3,4,5],30,proof,{ value: ethers.utils.parseEther("1") })).to.be.not.reverted;
+            .burninRegistory([1,2,4,5],30,proof,{ value: ethers.utils.parseEther("1") })).to.be.not.reverted;
+
+            // check isBurnin array
+            expect(await myContract.isBurnin([1,2,3,4,5])).to.be.deep.equal([true,true,false,true,true]);
 
             // Check withdraw
             // const initialBalance = await ethers.provider.getBalance(owner.address);
@@ -390,13 +393,13 @@ describe("TokenURIforAPP", function () {
             expect(await myContract.tokenURI_future(4,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/0/4.json");
 
             expect(await myContract.tokenURI_future(1,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
-            expect(await myContract.tokenURI_future(1,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+            expect(await myContract.tokenURI_future(1,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/1.json");
 
             expect(await myContract.tokenURI_future(3,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
-            expect(await myContract.tokenURI_future(3,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+            expect(await myContract.tokenURI_future(3,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/1.json");
             
             expect(await myContract.tokenURI_future(5,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
-            expect(await myContract.tokenURI_future(5,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
+            expect(await myContract.tokenURI_future(5,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/1.json");
 
             // reveal
             await myContract.connect(owner).setPaused(true);
