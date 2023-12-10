@@ -151,10 +151,14 @@ describe("TokenURIforAPP", function () {
         
             // Set up other preconditions...
             await myContract.connect(owner).setPaused(false);
+
+            expect(await myContract.getRemain(users[0].address,30,proof)).to.be.equal(30);
             
             // Call burninRegistory
             await expect(myContract.connect(users[0])
             .burninRegistory([1,2,4,5],30,proof,{ value: ethers.utils.parseEther("1") })).to.be.not.reverted;
+
+            expect(await myContract.getRemain(users[0].address,30,proof)).to.be.equal(26);
 
             // check isBurnin array
             expect(await myContract.isBurnin([1,2,3,4,5])).to.be.deep.equal([true,true,false,true,true]);
@@ -386,11 +390,11 @@ describe("TokenURIforAPP", function () {
             .burninRegistory([1,3,5],30,proof,{ value: ethers.utils.parseEther("1") })).to.be.not.reverted;
 
             // check tokenURI
-            expect(await myContract.tokenURI_future(2,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/0/2.json");
-            expect(await myContract.tokenURI_future(2,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/0/2.json");
+            expect(await myContract.tokenURI_future(2,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/2.json");
+            expect(await myContract.tokenURI_future(2,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/2.json");
 
-            expect(await myContract.tokenURI_future(4,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/0/4.json");
-            expect(await myContract.tokenURI_future(4,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/0/4.json");
+            expect(await myContract.tokenURI_future(4,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/metadata/4.json");
+            expect(await myContract.tokenURI_future(4,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app_lock/metadata/4.json");
 
             expect(await myContract.tokenURI_future(1,0)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/0.json");
             expect(await myContract.tokenURI_future(1,1)).to.be.equal("https://nft.aopanda.ainy-llc.com/site/app/reveal/metadata/1.json");

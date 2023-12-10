@@ -137,13 +137,23 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
                 _baseURI = baseURI_lock;
             }
             // Show Image
-            URI = string.concat(
+            if(burninIndexTokenId[_tokkenId] == 0){
+                // original
+                URI = string.concat(
+                _baseURI,
+                _tokkenId.toString(),
+                baseExtension
+                );
+            }else{
+                // burnin
+                URI = string.concat(
                 _baseURI,
                 burninIndexTokenId[_tokkenId].toString(),
                 "/",
                 _tokkenId.toString(),
                 baseExtension
-            );
+                );
+            }
         }else{
             // before rebeal
             string memory _metadata = "0.json";
