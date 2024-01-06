@@ -30,7 +30,8 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
 
     uint128 public currentBurninIndex = 1; // First time burnin is 1 and original is 0.
     bool public paused = true;
-    uint256 public cost = 0.001 ether;
+    // uint256 public cost = 0.001 ether;
+    uint256 public cost = 0 ether;
     bytes32 public merkleRoot;
     string public baseURI;
     string public baseURI_lock;
@@ -95,7 +96,9 @@ contract TokenURIforAPP is ITokenURIforAPP,AccessControl{
         require(getALAuth(msg.sender,_alAmountMax,_merkleProof) == true,"You don't have a Allowlist!");
         require(_burnTokenIds.length > 0, "need to burnin at least 1 NFT");
         require(_burnTokenIds.length <= _getRemainWithCheck(msg.sender,_alAmountMax), "claim is over max amount");
-        require(msg.value >= cost * _burnTokenIds.length, "not enough eth");
+        if(cost > 0){
+            require(msg.value >= cost * _burnTokenIds.length, "not enough eth");
+        }
         
         _walletMng[msg.sender].burninCount += uint128(_burnTokenIds.length);
 

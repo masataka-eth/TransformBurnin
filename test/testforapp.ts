@@ -307,32 +307,32 @@ describe("TokenURIforAPP", function () {
             });
         });
 
-        it("not enough eth", async function () {
-            const { myContract, owner, users,tree } = await loadFixture(fixture);
+        // it("not enough eth", async function () {
+        //     const { myContract, owner, users,tree } = await loadFixture(fixture);
         
-            let proof = tree.getHexProof(ethers.utils.solidityKeccak256(
-                ['address', 'uint256'], [users[0].address,30]))
+        //     let proof = tree.getHexProof(ethers.utils.solidityKeccak256(
+        //         ['address', 'uint256'], [users[0].address,30]))
 
-            // Deploy the ERC721Mock contract
-            const ERC721Mock = await ethers.getContractFactory("ERC721Mock");
-            const erc721 = await ERC721Mock.deploy("Test Token", "TST");
+        //     // Deploy the ERC721Mock contract
+        //     const ERC721Mock = await ethers.getContractFactory("ERC721Mock");
+        //     const erc721 = await ERC721Mock.deploy("Test Token", "TST");
         
-            // Mint a token to user[0]
-            for(let i = 1; i <= 5; i++){
-                await erc721.connect(owner).mint(users[0].address, i);
-            }
+        //     // Mint a token to user[0]
+        //     for(let i = 1; i <= 5; i++){
+        //         await erc721.connect(owner).mint(users[0].address, i);
+        //     }
         
-            // Set burninNFT to our ERC721Mock contract
-            await myContract.connect(owner).setBurninNFT(erc721.address);
+        //     // Set burninNFT to our ERC721Mock contract
+        //     await myContract.connect(owner).setBurninNFT(erc721.address);
         
-            // Set up other preconditions...
-            await myContract.connect(owner).setPaused(false);
+        //     // Set up other preconditions...
+        //     await myContract.connect(owner).setPaused(false);
             
-            // Call burninRegistory
-            await expect(myContract.connect(users[0])
-            .burninRegistory([1,2,3,4,5],30,proof,{ value: ethers.utils.parseEther("0.004") }))
-            .revertedWith("not enough eth")
-        });
+        //     // Call burninRegistory
+        //     await expect(myContract.connect(users[0])
+        //     .burninRegistory([1,2,3,4,5],30,proof,{ value: ethers.utils.parseEther("0.004") }))
+        //     .revertedWith("not enough eth")
+        // });
 
         it("OnlyOperatedByTokenOwner", async function () {
             const { myContract, owner, users,tree } = await loadFixture(fixture);
